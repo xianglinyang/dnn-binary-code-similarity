@@ -1,5 +1,5 @@
 import tensorflow as tf
-print tf.__version__
+print(tf.__version__)
 #import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
@@ -7,11 +7,12 @@ from graphnnSiamese import graphnn
 from utils import *
 import os
 import argparse
+import NumericFeatureExtractor
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--device', type=str, default='0',
-        help='visible gpu device')
+# parser.add_argument('--device', type=str, default='0',
+#         help='visible gpu device')
 parser.add_argument('--fea_dim', type=int, default=7,
         help='feature dimension')
 parser.add_argument('--embed_dim', type=int, default=64,
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     print(args)
     print("=================================")
 
-    os.environ["CUDA_VISIBLE_DEVICES"]=args.device
+    # os.environ["CUDA_VISIBLE_DEVICES"]=args.device
     Dtype = args.dtype
     NODE_FEATURE_DIM = args.fea_dim
     EMBED_DIM = args.embed_dim
@@ -72,53 +73,7 @@ if __name__ == '__main__':
     F_NAME = get_f_name(DATA_FILE_NAME, SOFTWARE, COMPILER,
             OPTIMIZATION, VERSION)
     FUNC_NAME_DICT = get_f_dict(F_NAME)
-     
 
-    Gs, classes = read_graph(F_NAME, FUNC_NAME_DICT, NODE_FEATURE_DIM)
-    print "{} graphs, {} functions".format(len(Gs), len(classes))
-
-
-    if os.path.isfile('data/class_perm.npy'):
-        perm = np.load('data/class_perm.npy')
-    else:
-        perm = np.random.permutation(len(classes))
-        np.save('data/class_perm.npy', perm)
-    if len(perm) < len(classes):
-        perm = np.random.permutation(len(classes))
-        np.save('data/class_perm.npy', perm)
-
-    Gs_train, classes_train, Gs_dev, classes_dev, Gs_test, classes_test =\
-            partition_data(Gs,classes,[0.8,0.1,0.1],perm)
-
-    print "Train: {} graphs, {} functions".format(
-            len(Gs_train), len(classes_train))
-    print "Dev: {} graphs, {} functions".format(
-            len(Gs_dev), len(classes_dev))
-    print "Test: {} graphs, {} functions".format(
-            len(Gs_test), len(classes_test))
-
-    # Fix the pairs for validation and testing
-    if os.path.isfile('data/valid.json'):
-        with open('data/valid.json') as inf:
-            valid_ids = json.load(inf)
-        valid_epoch = generate_epoch_pair(
-                Gs_dev, classes_dev, BATCH_SIZE, load_id=valid_ids)
-    else:
-        valid_epoch, valid_ids = generate_epoch_pair(
-                Gs_dev, classes_dev, BATCH_SIZE, output_id=True)
-        with open('data/valid.json', 'w') as outf:
-            json.dump(valid_ids, outf)
-
-    if os.path.isfile('data/test.json'):
-        with open('data/test.json') as inf:
-            test_ids = json.load(inf)
-        test_epoch = generate_epoch_pair(
-                Gs_test, classes_test, BATCH_SIZE, load_id=test_ids)
-    else:
-        test_epoch, test_ids = generate_epoch_pair(
-                Gs_test, classes_test, BATCH_SIZE, output_id=True)
-        with open('data/test.json', 'w') as outf:
-            json.dump(test_ids, outf)
 
     # Model
     gnn = graphnn(
@@ -132,10 +87,10 @@ if __name__ == '__main__':
         )
     gnn.init(LOAD_PATH, LOG_PATH)
 
-    # Test
-    val_auc, fpr, tpr, thres = get_auc_epoch(
-            gnn, Gs_dev, classes_dev, BATCH_SIZE, load_data=valid_epoch)
-    gnn.say( "AUC on validation set: {}".format(val_auc) )
-    test_auc, fpr, tpr, thres = get_auc_epoch(
-            gnn, Gs_test, classes_test, BATCH_SIZE, load_data=test_epoch)
-    gnn.say( "AUC on testing set: {}".format(test_auc) )
+    bin = "/home/xianglin/PycharmProjects/genius/testcase/2423496af35d94a87156b063ea5cedffc10a70a1/vmlinux"
+    func_name = "dccp_rcv_state_process"
+    X, m = NumericFeatureExtractor.get_func_fea(bin, func_name)
+    X1 = np.array([X])
+    m1 = np.array([m])
+    diff = gnn.calc_diff(X1, X1, m1, m1)
+    print(diff)

@@ -44,7 +44,8 @@ class graphnn(object):
                     N_o,
                     ITER_LEVEL,
                     lr,
-                    device = '/gpu:0'
+                    # device = '/gpu:0'
+                    device='/cpu:0'
                 ):
 
         self.NODE_LABEL_DIM = N_x
@@ -94,7 +95,7 @@ class graphnn(object):
             self.optimizer = optimizer
     
     def say(self, string):
-        print string
+        print(string)
         if self.log_file != None:
             self.log_file.write(string+'\n')
     

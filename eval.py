@@ -87,10 +87,17 @@ if __name__ == '__main__':
         )
     gnn.init(LOAD_PATH, LOG_PATH)
 
-    bin = "/home/xianglin/PycharmProjects/genius/testcase/2423496af35d94a87156b063ea5cedffc10a70a1/vmlinux"
-    func_name = "dccp_rcv_state_process"
-    X, m = NumericFeatureExtractor.get_func_fea(bin, func_name)
+    # bin = "/home/xianglin/PycharmProjects/genius/testcase/2423496af35d94a87156b063ea5cedffc10a70a1/vmlinux"
+    # func_name = "fill_tso_desc"
+    # func_name2 = "ip_forward_options"
+    bin1 = '/home/xianglin/Graduation/executables/add_x'
+    bin2 = '/home/xianglin/Graduation/executables/add_arm'
+    X, m = NumericFeatureExtractor.get_func_fea(bin1, "main")
     X1 = np.array([X])
     m1 = np.array([m])
-    diff = gnn.calc_diff(X1, X1, m1, m1)
-    print(diff)
+    X, m = NumericFeatureExtractor.get_func_fea(bin2, "main")
+    X2 = np.array([X])
+    m2 = np.array([m])
+    diff = gnn.calc_diff(X1, X2, m1, m2)
+    similarity = (1-diff)/2
+    print(similarity)
